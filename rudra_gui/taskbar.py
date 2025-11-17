@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QPoint
 from rudra_gui.start_menu import StartMenu
 import subprocess
 
@@ -13,6 +13,7 @@ class Taskbar(QWidget):
         layout.setContentsMargins(10, 2, 10, 2)
 
         self.start_menu = None
+        self.ai_console = None
 
         start_btn = QPushButton("Rudra")
         start_btn.setStyleSheet(
@@ -27,7 +28,9 @@ class Taskbar(QWidget):
 
     def launch_app(self, app_name):
         if app_name == "shutdown":
-            self.window().close()
+            win = self.window()
+            if win:
+                win.close()
             return
 
         if app_name == "rudra_ai":

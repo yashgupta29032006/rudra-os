@@ -2,8 +2,9 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton
 from PyQt6.QtCore import Qt
 
 class StartMenu(QWidget):
-    def __init__(self, launcher_callback):
-        super().__init__()
+    def __init__(self, launcher_callback, parent=None):
+        super().__init__(parent)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.FramelessWindowHint)
         self.setFixedSize(300, 400)
         self.setStyleSheet("background-color: #1f1f1f; border: 1px solid #444;")
 
