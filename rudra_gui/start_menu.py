@@ -1,38 +1,85 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
+    QLineEdit, QListWidget, QListWidgetItem, QFrame
+)
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
+
 
 class StartMenu(QWidget):
-    def __init__(self, launcher_callback, parent=None):
+    def __init__(self, launch_app, parent=None):
         super().__init__(parent)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.FramelessWindowHint)
-        self.setFixedSize(300, 400)
-        self.setStyleSheet("background-color: #1f1f1f; border: 1px solid #444;")
+        self.launch_app = launch_app
 
-        self.launcher_callback = launcher_callback
+        self.setFixedSize(420, 520)
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #1e1e1e;
+                border: 1px solid #303030;
+                border-radius: 8px;
+            }
+            QLineEdit {
+                background-color: #2a2a2a;
+                padding: 8px;
+                color: white;
+                border-radius: 5px;
+            }
+            QPushButton {
+                background-color: #2d2d2d;
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+                text-align: left;
+            }
+            QPushButton:hover {
+                background-color: #3c3c3c;
+            }
+        """)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(10, 10, 10, 10)
-        layout.setSpacing(8)
+        layout.setSpacing(10)
 
-        btn_terminal = QPushButton("Open Terminal")
-        btn_terminal.clicked.connect(lambda: self._launch_and_hide("gnome-terminal"))
-        layout.addWidget(btn_terminal)
+        search = QLineEdit()
+        search.setPlaceholderText("Search apps, tools...")
+        layout.addWidget(search)
 
-        btn_ai = QPushButton("Rudra AI Console")
-        btn_ai.clicked.connect(lambda: self._launch_and_hide("rudra_ai"))
-        layout.addWidget(btn_ai)
+        pinned_label = QLabel("Pinned")
+        pinned_label.setStyleSheet("color: #bbbbbb; padding-left: 4px;")
+        layout.addWidget(pinned_label)
 
-        btn_firefox = QPushButton("Open Firefox")
-        btn_firefox.clicked.connect(lambda: self._launch_and_hide("firefox"))
-        layout.addWidget(btn_firefox)
+        pinned_layout = QHBoxLayout()
+        pinned_apps = ["terminal", "files", "browser", "settings"]
 
-        btn_shutdown = QPushButton("Shutdown Rudra Desktop")
-        btn_shutdown.clicked.connect(lambda: self._launch_and_hide("shutdown"))
-        layout.addWidget(btn_shutdown)
+        for app in pinned_apps:
+            btn = QPushButton(app.capitalize())
+            btn.clicked.connect(lambda _, name=app: self.launch_app(name))
+            pinned_layout.addWidget(btn)
 
-        layout.addStretch(1)
+        layout.addLayout(pinned_layout)
+
+        divider = QFrame()
+        divider.setFrameShape(QFrame.Shape.HLine)
+        divider.setStyleSheet("color: #444;")
+        layout.addWidget(divider)
+
+        apps_label = QLabel("All Apps")
+        apps_label.setStyleSheet("color: #bbbbbb; padding-left: 4px;")
+        layout.addWidget(apps_label)
+
+        self.apps_list = QListWidget()
+        all_apps = ["terminal", "files", "browser", "editor", "rudra_ai", "shutdown"]
+
+        for app in all_apps:
+            item = QListWidgetItem(f"  {app}")
+            self.apps_list.addItem(item)
+
+        self.apps_list.itemClicked.connect(self.handle_item_click)
+        layout.addWidget(self.apps_list)
+
         self.setLayout(layout)
 
-    def _launch_and_hide(self, app_name):
+    def handle_item_click(self, item):
+        app_name = item.text().strip()
+        self.launch_app(app_name)
         self.hide()
-        self.launcher_callback(app_name)
