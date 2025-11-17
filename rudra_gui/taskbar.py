@@ -1,7 +1,9 @@
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton
 from PyQt6.QtCore import Qt, QPoint
 from rudra_gui.start_menu import StartMenu
+from rudra_gui.ai_console import AIConsole
 import subprocess
+import os
 
 class Taskbar(QWidget):
     def __init__(self):
@@ -27,6 +29,7 @@ class Taskbar(QWidget):
         self.setLayout(layout)
 
     def launch_app(self, app_name):
+        """Launch apps. special names: 'shutdown', 'rudra_ai'"""
         if app_name == "shutdown":
             win = self.window()
             if win:
@@ -34,15 +37,39 @@ class Taskbar(QWidget):
             return
 
         if app_name == "rudra_ai":
-            subprocess.Popen(["python3", "-c", "print('AI Console coming soon')"])
+            self.open_ai_console()
             return
-
-        subprocess.Popen([app_name])
+        try:
+            subprocess.Popen([app_name])
+        except Exception:
+            try:
+                os.system(f"{app_name} &")
+            except Exception as e:
+                print("Launcher error:", e)
 
     def toggle_start_menu(self):
         if self.start_menu and self.start_menu.isVisible():
             self.start_menu.hide()
-        else:
-            self.start_menu = StartMenu(self.launch_app)
-            self.start_menu.move(20, self.window().height() - 450)
-            self.start_menu.show()
+            return
+
+        if not self.start_menu:
+            self.start_menu = StartMenu(self.launch_app, parent=self.window())
+
+        main_win = self.window()
+        if main_win:
+            x = 10
+            y = main_win.height() - self.start_menu.height() - self.height() - 10
+            self.start_menu.move(QPoint(x, y))
+        self.start_menu.show()
+
+    def open_ai_console(self):
+        if self.ai_console and self.ai_console.isVisible():
+            self.ai_console.raise_()
+            return
+        self.ai_console = AIConsole(parent=self.window())
+        main_win = self.window()
+        if main_win:
+            center_x = (main_win.width() - self.ai_console.width()) // 2
+            center_y = (main_win.height() - self.ai_console.height()) // 2
+            self.ai_console.move(center_x, center_y)
+        self.ai_console.show()
