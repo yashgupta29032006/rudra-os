@@ -40,9 +40,10 @@ class StartMenu(QWidget):
         layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(10)
 
-        search = QLineEdit()
-        search.setPlaceholderText("Search apps, tools...")
-        layout.addWidget(search)
+        self.search = QLineEdit()
+        self.search.setPlaceholderText("Search apps, tools...")
+        self.search.textChanged.connect(self.filter_apps)  
+        layout.addWidget(self.search)
 
         pinned_label = QLabel("Pinned")
         pinned_label.setStyleSheet("color: #bbbbbb; padding-left: 4px;")
@@ -68,16 +69,33 @@ class StartMenu(QWidget):
         layout.addWidget(apps_label)
 
         self.apps_list = QListWidget()
-        all_apps = ["terminal", "files", "browser", "editor", "rudra_ai", "shutdown"]
 
-        for app in all_apps:
-            item = QListWidgetItem(f"  {app}")
-            self.apps_list.addItem(item)
+        self.all_apps = [
+            "terminal", "files", "browser", "editor", 
+            "rudra_ai", "settings", "shutdown"
+        ]
+
+        self.load_apps(self.all_apps)
 
         self.apps_list.itemClicked.connect(self.handle_item_click)
         layout.addWidget(self.apps_list)
 
         self.setLayout(layout)
+
+    def load_apps(self, apps):
+        self.apps_list.clear()
+        for app in apps:
+            item = QListWidgetItem(f"  {app}")
+            self.apps_list.addItem(item)
+
+    def filter_apps(self, text):
+        text = text.lower().strip()
+        if text == "":
+            self.load_apps(self.all_apps)
+            return
+
+        filtered = [app for app in self.all_apps if text in app.lower()]
+        self.load_apps(filtered)
 
     def handle_item_click(self, item):
         app_name = item.text().strip()
