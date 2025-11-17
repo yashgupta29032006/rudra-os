@@ -41,6 +41,5 @@ class Taskbar(QWidget):
             self.start_menu.hide()
         else:
             self.start_menu = StartMenu(self.launch_app)
-            # Position the menu above taskbar
             self.start_menu.move(20, self.window().height() - 450)
             self.start_menu.show()
