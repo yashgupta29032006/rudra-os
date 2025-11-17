@@ -60,9 +60,9 @@ class Taskbar(QWidget):
         self.start_menu = None
         self.ai_console = None
         self.app_launcher = None
+        self.menu_open = False    
 
     def launch_app(self, app_name):
-        """Launch apps. Special names: 'shutdown', 'rudra_ai' """
 
         if app_name == "shutdown":
             win = self.window()
@@ -86,8 +86,9 @@ class Taskbar(QWidget):
             print("Launcher error:", e)
 
     def toggle_start_menu(self):
-        if self.start_menu and self.start_menu.isVisible():
-            self.start_menu.hide()
+        if self.start_menu and self.menu_open:
+            self.start_menu.animate_hide()
+            self.menu_open = False
             return
 
         if not self.start_menu:
@@ -97,9 +98,9 @@ class Taskbar(QWidget):
         if main_win:
             x = 10
             y = main_win.height() - self.start_menu.height() - self.height() - 10
-            self.start_menu.move(QPoint(x, y))
+            self.start_menu.animate_show(x, y)
 
-        self.start_menu.show()
+        self.menu_open = True
 
     def toggle_app_launcher(self):
         if self.app_launcher and self.app_launcher.isVisible():
