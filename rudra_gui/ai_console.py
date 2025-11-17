@@ -1,6 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton
 from PyQt6.QtCore import Qt
-# Use your local LLMInterface if you want immediate responses
 try:
     from rudra_shell.llm_interface import LLMInterface
 except Exception:
