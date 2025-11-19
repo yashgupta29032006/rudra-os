@@ -39,12 +39,38 @@ class ClockPanel(QWidget):
 
         self.calendar = QCalendarWidget()
         self.calendar.setStyleSheet("""
-            QCalendarWidget QAbstractItemView {
-                background-color:#2a2a2a;
-                color:white;
-                selection-background-color:#3a3cff;
+            QCalendarWidget {
+                background-color: #1e1e1e;
+                color: white;
+                border: none;
+            }
+
+            /* Weekday headers */
+            QCalendarWidget QTableView QHeaderView::section {
+                background-color: #1e1e1e;
+                color: #ddd;            /* makes Mon visible */
+                font-weight: bold;
+                border: none;
+                padding: 5px;
+            }
+            
+            /* Sundays */
+            QCalendarWidget QTableView::item:selected {
+                background-color: #3a3cff;
+                color: white;
+            }
+
+            QCalendarWidget QWidget#qt_calendar_navigationbar {
+                background-color: #151515;
+            }
+
+            QCalendarWidget QSpinBox,
+            QCalendarWidget QToolButton {
+                background-color: #1e1e1e;
+                color: white;
             }
         """)
+
         layout.addWidget(self.calendar)
 
         self.setLayout(layout)
@@ -59,6 +85,11 @@ class ClockPanel(QWidget):
         self.move(x, sy)
         self.show()
         self.update_date()
+
+        try:
+            self.fade.finished.disconnect()
+        except:
+            pass
 
         self.slide.setDuration(200)
         self.slide.setStartValue(QPoint(x, sy))

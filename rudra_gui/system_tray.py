@@ -67,7 +67,7 @@ class SystemTray(QWidget):
     # --------------------------------------------------------
     def toggle_clock_panel(self, event):
         if not self.clock_panel:
-            self.clock_panel = ClockPanel(self.parent())
+            self.clock_panel = ClockPanel(self.window())
 
         # If already open => close it
         if self.panel_open:
@@ -76,7 +76,7 @@ class SystemTray(QWidget):
             return
 
         # If closed => open it
-        parent = self.parent()
+        parent = self.window()
         if parent:
             x = parent.width() - self.clock_panel.width() - 10
             y = parent.height() - self.clock_panel.height() - 60
