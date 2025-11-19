@@ -3,6 +3,8 @@ from PyQt6.QtCore import QPoint
 from rudra_gui.start_menu import StartMenu
 from rudra_gui.ai_console import AIConsole
 from rudra_gui.app_launcher import AppLauncher
+from rudra_gui.system_tray import SystemTray
+
 import subprocess
 import os
 
@@ -45,6 +47,8 @@ class Taskbar(QWidget):
         layout.addWidget(start_btn)
         layout.addWidget(apps_btn)
         layout.addStretch(1)
+        self.system_tray = SystemTray(self)
+        layout.addWidget(self.system_tray)
         self.setLayout(layout)
 
         self.start_menu = None
