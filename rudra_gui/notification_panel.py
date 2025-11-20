@@ -65,11 +65,9 @@ class NotificationPanel(QWidget):
             Qt.WindowType.Tool |
             Qt.WindowType.WindowStaysOnTopHint
         )
-        # translucent background + rounded corners
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setFixedSize(360, parent.height() * 0.6 if parent else 500)
+        self.setFixedSize(360, int(parent.height() * 0.6) if parent else 500)
 
-        # container that holds content, with semi-translucent "glass"
         self.container = QWidget(self)
         self.container.setObjectName("panel_container")
         self.container.setGeometry(0, 0, self.width(), self.height())
@@ -162,10 +160,12 @@ class NotificationPanel(QWidget):
         self.scroll_layout.addStretch(1)
 
     def animate_show(self, x, y):
-        sy = x + 40  # NOTE: we animate from offscreen right => change in x
-        # start from off-right
-        start_pos = QPoint(self.parent().width(), int(y))
-        end_pos = QPoint(int(x), int(y))
+        parent = self.window()  # Correct parent reference
+
+        # slide from the right edge of the window
+        start_pos = QPoint(parent.width(), y)
+        end_pos = QPoint(x, y)
+
         self.move(start_pos)
         self.show()
 
@@ -181,9 +181,13 @@ class NotificationPanel(QWidget):
         self.slide_anim.start()
         self.fade_anim.start()
 
+
     def animate_hide(self):
+        parent = self.window()
+
         cur = self.pos()
-        end = QPoint(self.parent().width(), cur.y())
+        end = QPoint(parent.width(), cur.y())  # slide to right edge
+
         self.slide_anim.setDuration(180)
         self.slide_anim.setStartValue(cur)
         self.slide_anim.setEndValue(end)
@@ -200,6 +204,8 @@ class NotificationPanel(QWidget):
             self.fade_anim.finished.disconnect()
         except:
             pass
+
         self.fade_anim.finished.connect(finish)
         self.slide_anim.start()
         self.fade_anim.start()
+
