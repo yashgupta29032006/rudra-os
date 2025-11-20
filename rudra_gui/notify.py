@@ -1,4 +1,3 @@
-# rudra_gui/notify.py
 from collections import deque
 from PyQt6.QtCore import QObject, pyqtSignal, QDateTime
 

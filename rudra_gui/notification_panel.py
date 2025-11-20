@@ -1,4 +1,3 @@
-# rudra_gui/notification_panel.py
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QListWidget, QListWidgetItem,
     QFrame, QScrollArea, QHBoxLayout, QPushButton, QSizePolicy
@@ -129,13 +128,11 @@ class NotificationPanel(QWidget):
         self.panel_open = False
 
     def clear_notifications(self):
-        # naive clear by reinitializing manager.items deque (import inside to avoid circular)
         from rudra_gui.notify import _global_manager
         _global_manager.items.clear()
         _global_manager.changed.emit()
 
     def reload_notifications(self):
-        # remove old
         for i in reversed(range(self.scroll_layout.count())):
             w = self.scroll_layout.itemAt(i).widget()
             if w:
@@ -160,9 +157,13 @@ class NotificationPanel(QWidget):
         self.scroll_layout.addStretch(1)
 
     def animate_show(self, x, y):
-        parent = self.window()  # Correct parent reference
+        try:
+            self.fade_anim.finished.disconnect()
+        except:
+            pass
+            
+        parent = self.parent()  
 
-        # slide from the right edge of the window
         start_pos = QPoint(parent.width(), y)
         end_pos = QPoint(x, y)
 
@@ -183,10 +184,10 @@ class NotificationPanel(QWidget):
 
 
     def animate_hide(self):
-        parent = self.window()
+        parent = self.parent()
 
         cur = self.pos()
-        end = QPoint(parent.width(), cur.y())  # slide to right edge
+        end = QPoint(parent.width(), cur.y())  
 
         self.slide_anim.setDuration(180)
         self.slide_anim.setStartValue(cur)

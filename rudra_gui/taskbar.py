@@ -81,7 +81,9 @@ class Taskbar(QWidget):
         except:
             os.system(f"{app} &")
 
-    def toggle_notifications(self, event):
+    def toggle_notifications(self, event=None):
+        if event and hasattr(event, 'accept'):
+            event.accept()
         if not self.notification_panel:
             self.notification_panel = NotificationPanel(self.window())
 
