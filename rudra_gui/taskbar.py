@@ -1,10 +1,11 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLabel
 from PyQt6.QtCore import QPoint
 from rudra_gui.start_menu import StartMenu
 from rudra_gui.ai_console import AIConsole
 from rudra_gui.app_launcher import AppLauncher
 from rudra_gui.system_tray import SystemTray
-
+from rudra_gui.notification_panel import NotificationPanel
+from PyQt6.QtCore import Qt
 import subprocess
 import os
 
@@ -51,6 +52,15 @@ class Taskbar(QWidget):
         layout.addWidget(self.system_tray)
         self.setLayout(layout)
 
+        self.bell = QLabel("🔔")
+        self.bell.setStyleSheet("color: white; font-size: 18px;")
+        self.bell.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.bell.mousePressEvent = self.toggle_notifications
+        layout.insertWidget(layout.count()-1, self.bell)  
+
+        self.notification_panel = None
+        self.notifications_open = False
+
         self.start_menu = None
         self.ai_console = None
         self.app_launcher = None
@@ -70,6 +80,22 @@ class Taskbar(QWidget):
             subprocess.Popen([app])
         except:
             os.system(f"{app} &")
+
+    def toggle_notifications(self, event):
+        if not self.notification_panel:
+            self.notification_panel = NotificationPanel(self.window())
+
+        if self.notifications_open:
+            self.notification_panel.animate_hide()
+            self.notifications_open = False
+            return
+
+        parent = self.window()
+        if parent:
+            x = parent.width() - self.notification_panel.width() - 12
+            y = 80  
+            self.notification_panel.animate_show(x, y)
+            self.notifications_open = True
 
     def toggle_start_menu(self):
         if self.start_menu and self.menu_open:
