@@ -4,7 +4,6 @@ import google.generativeai as genai
 
 class LLMInterface:
     def __init__(self, model_name="gemini-1.5-flash"):
-        # Correct key fetch
         api_key = os.environ.get("GEMINI_API_KEY")
 
         if not api_key:
