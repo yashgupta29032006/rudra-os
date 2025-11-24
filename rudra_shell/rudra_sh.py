@@ -1,9 +1,8 @@
 from rudra_shell.llm_interface import LLMInterface
 from rudra_plugins.plugin_loader import PluginLoader
 
-from rudra_core.tool_registry import ToolRegistry
-from rudra_core.dispatcher import Dispatcher
-from rudra_core.agent_planner import AgentPlanner
+from rudra_ai.planner import DeepPlanner, TOOL_REGISTRY
+import json
 
 
 class RudraShell:
@@ -13,20 +12,31 @@ class RudraShell:
         self.llm = LLMInterface()
         self.plugins = PluginLoader()
         self.plugins.load_plugins()
-        self.registry = ToolRegistry()
-        self.dispatcher = Dispatcher(self.registry)
-        self.planner = AgentPlanner()
+        self.planner = DeepPlanner(llm=self.llm)
 
         for name, plugin in self.plugins.plugins.items():
-            self.registry.register(
-                name=plugin.name,
-                description=(plugin.__doc__ or ""),
-                func=lambda command, p=plugin: p.run(command)
-            )
+            # Register plugin as a tool in the global registry
+            try:
+                if hasattr(plugin, "execute"):
+                    TOOL_REGISTRY.register(
+                        name=plugin.name,
+                        func=plugin.execute,
+                        schema=getattr(plugin, "schema", {})
+                    )
+                else:
+                     # Fallback for plugins without execute/schema (legacy)
+                    TOOL_REGISTRY.register(
+                        name=plugin.name,
+                        func=lambda command, p=plugin: p.run(command),
+                        schema={"command": str}
+                    )
+            except ValueError:
+                # Tool already registered, skip
+                pass
 
 
     def start(self):
-        print("Welcome to Rudra OS.")
+        print("Welcome to Rudra OS (AI Mode).")
         while True:
             cmd = input("rudra> ")
 
@@ -34,8 +44,8 @@ class RudraShell:
                 print("Shutting down Rudra OS...")
                 break
 
-            steps = self.planner.plan(cmd)
-
-            for action in steps:
-                result = self.dispatcher.dispatch(action)
-                print(result)
+            try:
+                report = self.planner.run(cmd)
+                print(json.dumps(report, indent=2, default=str))
+            except Exception as e:
+                print(f"Error: {e}")

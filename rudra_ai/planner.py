@@ -25,9 +25,9 @@ import time
 from rudra_shell.llm_interface import LLMInterface
 
 # Local uploaded asset (developer: the uploaded file path from the session)
-UPLOADED_FILE_PATH = "/mnt/data/Screenshot 2025-11-20 at 12.48.23 AM.png"
+UPLOADED_FILE_PATH = None
 # If you need a file:// url for tool calls, convert like:
-UPLOADED_FILE_URL = f"file://{UPLOADED_FILE_PATH}"
+UPLOADED_FILE_URL = None
 
 class ToolError(Exception):
     pass
@@ -101,11 +101,21 @@ class DeepPlanner:
         Multi-pass plan generation (deep mode).
         The LLM will be asked to produce a structured plan. We validate, then re-ask if invalid.
         """
-        tools = TOOL_REGISTRY.list_tools()
+        tools_info = []
+        for name, spec in TOOL_REGISTRY.tools.items():
+            # Convert types to strings for JSON serialization
+            safe_schema = {}
+            if spec.schema:
+                for k, v in spec.schema.items():
+                    safe_schema[k] = str(v.__name__) if isinstance(v, type) else str(v)
+            
+            schema_str = json.dumps(safe_schema)
+            tools_info.append(f"- {name}: {schema_str}")
+        
         prompt_base = (
             "You are a planning LLM. Produce a JSON array of steps to accomplish the user's command. "
             "Each step is an object: {\"tool\": \"tool_name\", \"args\": {...}}. "
-            "Allowed tools: " + ", ".join(tools) + ".\n"
+            "Allowed tools and their argument schemas:\n" + "\n".join(tools_info) + "\n"
             "If a tool is not necessary, do not invent it. Keep steps minimal and deterministic.\n\n"
         )
 
@@ -115,7 +125,8 @@ class DeepPlanner:
             attempt += 1
             prompt = prompt_base + f"User: {user_command}\n\nReturn only valid JSON array.\n"
             # supply uploaded file reference as example context
-            prompt += f"\nContext file (local): {UPLOADED_FILE_URL}\n"
+            if UPLOADED_FILE_URL:
+                prompt += f"\nContext file (local): {UPLOADED_FILE_URL}\n"
             raw = self.llm.ask(prompt)
             try:
                 plan = json.loads(raw)
@@ -228,7 +239,7 @@ class DeepPlanner:
         High-level execute function: analyze -> plan -> execute -> return report
         """
         start = time.time()
-        analysis = self.analyze(user_command, extra_context={"uploaded_file": UPLOADED_FILE_URL})
+        analysis = self.analyze(user_command, extra_context={"uploaded_file": UPLOADED_FILE_URL} if UPLOADED_FILE_URL else None)
         try:
             plan = self.plan(user_command, max_iterations=max_plan_iters)
         except Exception as e:
@@ -274,13 +285,8 @@ def _example_create_file(path: str, content: str = ""):
         f.write(content)
     return {"path": path, "size": len(content)}
 
-# register example tools (you can remove or replace these)
-try:
-    register_tool("create_folder", _example_create_folder, schema={"path": str})
-    register_tool("create_file", _example_create_file, schema={"path": str, "content": str})
-except Exception:
-    # ignore double-registration during reloads
-    pass
+# Example tools removed to avoid conflict with plugins
+pass
 
 # ---------- Simple helper to run the planner from REPL ----------
 def repl_run(command: str, dry: bool = True):

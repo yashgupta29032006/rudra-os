@@ -3,7 +3,7 @@ import google.generativeai as genai
 
 
 class LLMInterface:
-    def __init__(self, model_name="gemini-1.5-flash"):
+    def __init__(self, model_name="gemini-2.0-flash"):
         api_key = os.environ.get("GEMINI_API_KEY")
 
         if not api_key:

@@ -9,6 +9,9 @@ class Plugin:
         return any(word in command.lower() for word in keywords)
 
     def run(self, command: str) -> str:
+        return self.execute()
+
+    def execute(self) -> str:
         info = {
             "OS": platform.system(),
             "Release": platform.release(),
@@ -17,3 +20,7 @@ class Plugin:
             "Cores": os.cpu_count(),
         }
         return f"[System Info]\n{info}"
+
+    @property
+    def schema(self):
+        return {}

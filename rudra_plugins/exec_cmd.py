@@ -8,8 +8,17 @@ class Plugin:
 
     def run(self, command: str) -> str:
         raw_cmd = command.replace("exec ", "")
+        return self.execute(raw_cmd)
+
+    def execute(self, command: str) -> str:
         try:
-            output = subprocess.getoutput(raw_cmd)
+            output = subprocess.getoutput(command)
             return "[Exec]\n" + output
         except Exception as e:
             return f"[Exec] Error: {e}"
+
+    @property
+    def schema(self):
+        return {
+            "command": str
+        }

@@ -10,8 +10,17 @@ class Plugin:
     def run(self, command: str) -> str:
         parts = command.split()
         folder = parts[-1] 
+        return self.execute(folder)
+
+    def execute(self, path: str) -> str:
         try:
-            os.makedirs(folder, exist_ok=True)
-            return f"[Folder] Created folder: {folder}"
+            os.makedirs(path, exist_ok=True)
+            return f"[Folder] Created folder: {path}"
         except Exception as e:
             return f"[Folder] Error: {e}"
+
+    @property
+    def schema(self):
+        return {
+            "path": str
+        }
